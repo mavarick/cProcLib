@@ -1,7 +1,6 @@
 /***************************************************************************
 *
-* Copyright (c) 2017 Baidu.com, Inc. All Rights Reserved
-* B142877
+* Copyright (c) 2017, Inc. All Rights Reserved
 *
 **************************************************************************/
 /**
@@ -88,6 +87,17 @@ int split_str(std::string src, std::string seps, std::vector<std::string>& dest)
     return dest.size();
 }
 
+std::string lstrip_str(std::string ori_str, char ch){
+    int size = ori_str.size();
+    int idx = 0;
+    for(; idx < size; idx++){
+        if (ori_str[idx] != ch){
+            break;
+        }
+    }
+    return ori_str.substr(idx, size + 1);
+}
+
 int main(int argc, char * argv []){
     if (argc < 2){
         std::cout << "usage: ./mat2svm mat_file svm_file" << std::endl;
@@ -99,6 +109,41 @@ int main(int argc, char * argv []){
         outfile = "";
     }else{
         outfile = argv[2];
+    }
+
+    std::string filename = "";
+    std::string outfile = "";
+    std::string sep = "\t";
+    std::string sep_out = "\t";
+
+    int idx = 1;
+    std::string key;
+    std::string val;
+    while (idx < argc){
+        key = argv[idx];
+        if (key[0] == '-' && idx < argc + 1 && argv[idx+1][0] != '-'){
+            key = lstrip_str(key, '-');
+            val = argv[++idx];
+        }
+        switch(key[0]) {
+            case 'i':
+                filename = val;
+                break;
+            case 'o':
+                outfile = val;
+                break;
+            case 's':
+                sep = val;
+            case 'd':
+                sep_out = val;
+        }
+
+
+
+
+        }
+
+        idx ++;
     }
 
     std::cout << "input: " << filename.c_str() << std::endl;
