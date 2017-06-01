@@ -15,6 +15,9 @@
 
 #include <iostream>
 #include <vector>
+#include <cstring>
+#include <cctype>
+#include <algorithm>
 
 //using namespace std;
 
@@ -117,6 +120,25 @@ namespace char_lib {
         }
     }
 
+    std::string tolower(const string ori){
+        std::string lower = ori;
+        for(int i=0;i<lower.size();i++){
+            lower[i] = tolower(lower[i]);
+        }
+        return lower;
+    }
+
+    std::string toupper(const string ori){
+//        string lower;
+//        lower.resize(ori.size());
+//        transform(input.begin(), input.end(), lower.begin(), ::tolower);
+//        return lower;
+        std::string lower = ori;
+        for(int i=0;i<lower.size();i++){
+            lower[i] = toupper(lower[i]);
+        }
+        return lower;
+    }
 }
 
 
