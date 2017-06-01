@@ -10,6 +10,8 @@
 * @version 1.0.0-alpha 
 * @brief
 *      提供基于文件类的数据处理，例如svm格式转换，或者按列分析等
+* @example
+ * ./mat2svm -i data.d -s ' ' -d '\t' -h true
 **/
 
 #include <iostream>
@@ -47,6 +49,7 @@ int mat2svm(std::string filename, std::string outfile="",
     int col_num = 0;
     float * data;
 
+    bool _header = header;
     int total_size = 0;
     while(!fin.eof()){
         items.clear();
@@ -54,6 +57,20 @@ int mat2svm(std::string filename, std::string outfile="",
 //        std::cout << line << std::endl;
         split_str(line, sep, items);
         col_num = items.size();
+
+        if (_header == true){
+            // 输出header的字典数据
+            std::string header_filename = filename;
+            header_filename.append(".head");
+            std::ofstream fheader(header_filename);
+
+            for(int i=1; i<col_num; i++){
+                fheader << i << ":" << items[i] << std::endl;
+            }
+            fheader.close();
+            _header = false;
+            continue;
+        }
 
         fout << items[0];
         for(int i=1; i<col_num; i++){
@@ -99,31 +116,22 @@ std::string lstrip_str(std::string ori_str, char ch){
 }
 
 int main(int argc, char * argv []){
-    if (argc < 2){
-        std::cout << "usage: ./mat2svm mat_file svm_file" << std::endl;
-        return -1;
-    }
-    std::string filename = argv[1];
-    std::string outfile;
-    if(argc == 2){
-        outfile = "";
-    }else{
-        outfile = argv[2];
-    }
-
     std::string filename = "";
     std::string outfile = "";
     std::string sep = "\t";
     std::string sep_out = "\t";
+    bool header = false;
+    std::string filter = "";
 
     int idx = 1;
     std::string key;
     std::string val;
-    while (idx < argc){
-        key = argv[idx];
-        if (key[0] == '-' && idx < argc + 1 && argv[idx+1][0] != '-'){
-            key = lstrip_str(key, '-');
-            val = argv[++idx];
+    for(;idx<argc;idx++) {
+        if (argv[idx][0] != '-' && argv[idx-1][0] == '-'){
+            key = lstrip_str(argv[idx-1], '-');
+            val = argv[idx];
+        }else{
+            continue;
         }
         switch(key[0]) {
             case 'i':
@@ -136,19 +144,39 @@ int main(int argc, char * argv []){
                 sep = val;
             case 'd':
                 sep_out = val;
+            case 'h':
+                // header
+                if (val == "true"){
+                    header = true;
+                }else{
+                    header = false;
+                }
+            case 'f':
+                // filter string, each char in str should be filtered
+                filter = val;
         }
-
-
-
-
-        }
-
-        idx ++;
     }
 
-    std::cout << "input: " << filename.c_str() << std::endl;
+    if (filename == ""){
+        std::cout << ""
+                "usage: ./mat2svm -i mat_file -o svm_file -s sep -d sep_out"
+                  << std::endl;
+        return -1;
+    }
+    if (outfile == ""){
+        outfile = filename;
+        outfile.append(".svm");
+        std::cout << "warn: outfile is empty, so use default: " << outfile << std::endl;
+    }
+
+    std::cout << "input:  " << filename.c_str() << std::endl;
     std::cout << "output: " << outfile.c_str() << std::endl;
-    int ret = mat2svm(filename, outfile);
+    std::cout << "sep:    " << sep.c_str() << std::endl;
+    std::cout << "sep_out:" << sep_out.c_str() << std::endl;
+    std::cout << "header:" << header << std::endl;
+    std::cout << "filter:" << filter << std::endl;
+
+    int ret = mat2svm(filename, outfile, header, sep=sep, sep_out=sep_out, filter=filter);
 
     return 0;
 }
